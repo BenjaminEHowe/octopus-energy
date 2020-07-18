@@ -22,6 +22,12 @@
       padding: 0.5rem;
     }
 
+    @media only screen and (max-width: 960px) {
+      #login form {
+        width: 100%;
+      }
+    }
+
     .footer {
       background-color: #f5f5f5;
       text-align: center;
@@ -54,7 +60,8 @@
           <button type="submit" class="btn btn-primary" id="emailPasswordLoginBtn">Submit</button>
         </form>
       </div>
-      <p class="lead" id="welcome" style="display:none">Welcome, <span id="welcomePreferredName"></span>!</p>
+      <button class="btn btn-danger float-right" id="logoutBtn" style="display: none;">Logout</button>
+      <div id="accountInfo"></div>
     </div>
   </main>
   <footer class="footer mt-auto py-3">
@@ -75,6 +82,7 @@
         displayErrorMessage(error);
         return;
       }
+      document.getElementById("apiKey").value = '';
       successfullyAuthenticated();
     });
 
@@ -88,7 +96,13 @@
         displayErrorMessage(error);
         return;
       }
+      document.getElementById("email").value = '';
+      document.getElementById("password").value = '';
       successfullyAuthenticated();
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      logout();
     });
 
     function displayErrorMessage(error) {
@@ -102,11 +116,23 @@
       `;
     }
 
+    function logout() {
+      octopus = new OctopusEnergy();
+      document.getElementById('accountInfo').innerHTML = '';
+      document.getElementById("login").style = '';
+      document.getElementById("logoutBtn").style = 'display: none;';
+    }
+
     async function successfullyAuthenticated() {
       document.getElementById("login").style = "display: none;";
+      document.getElementById("logoutBtn").style = '';
       let preferredName = await octopus.getPreferredName();
-      document.getElementById("welcomePreferredName").innerText = preferredName;
-      document.getElementById("welcome").style = "display: inherit"
+      document.getElementById('accountInfo').innerHTML += `<p class="lead" id="welcome">Welcome, ${preferredName}!</p>`;
+      let accounts = await octopus.getAccounts();
+      for (const account of accounts) {
+        document.getElementById('accountInfo').innerHTML += `<div id="acc-${account.number}"></div>`;
+        document.getElementById(`acc-${account.number}`).innerHTML += `<h2>Account ${account.number}</h2>`;
+      }
     }
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

@@ -3,7 +3,7 @@
 class OctopusEnergy {
   static #BASE_URL = 'https://api.octopus.energy';
 
-  #accountNumber = null;
+  #accounts = [];
   #token = null;
   #preferredName = null;
 
@@ -35,11 +35,19 @@ class OctopusEnergy {
   }
 
   // BEGIN GETTERS
-  async getAccountNumber() {
-    if (!this.#accountNumber) {
+async getAccount(accountNumber) {
+  let account = await this.#mustBeValidAccount(accountNumber);
+  if (!account.status) {
+    this.#GQLgetAccount(accountNumber);
+  }
+  return account;
+}
+
+  async getAccounts() {
+    if (!this.#accounts.length) {
       await this.#GQLgetLoggedInUser();
     }
-    return this.#accountNumber;
+    return this.#accounts;
   }
 
   async getPreferredName() {
@@ -55,7 +63,7 @@ class OctopusEnergy {
     let payload = {
       'operationName': 'apiKeyAuthentication',
       'variables': { apiKey },
-      'query': 'mutation apiKeyAuthentication($apiKey: String!) {apiKeyAuthentication(apiKey: $apiKey) {token __typename } }'
+      'query': 'mutation apiKeyAuthentication($apiKey: String!) {apiKeyAuthentication(apiKey: $apiKey) {token } }'
     };
     let json = await this.#submitGQL(payload);
     this.#handleAuthentication(json.apiKeyAuthentication.token, `using API key <code>${apiKey}</code>`);
@@ -75,18 +83,30 @@ class OctopusEnergy {
     return await fetch(`${OctopusEnergy.#BASE_URL}${url}/`);
   }
 
-  #GQLgetLoggedInUser = async function() {
-    if (!this.isAuthenticated()) {
-      throw 'Authentication required';
+  #GQLgetAccount = async function(accountNumber) {
+    this.#mustBeAuthenticated();
+    let account = await this.#mustBeValidAccount(accountNumber);
+    let payload = {
+      'operationName': 'getAccount',
+      'variables': { 'accountNumber': 'A-6D321FD7' },
+      'query': 'query getAccount($accountNumber: String!) { account(accountNumber: $accountNumber) { status number balance properties { id address occupancyPeriods { effectiveFrom effectiveTo } coordinates { latitude longitude } electricityMeterPoints { mpan id gspGroupId meters(includeInactive: false) { id serialNumber } agreements { id validFrom validTo tariff { __typename ... on TariffType { standingCharge displayName fullName __typename } ... on StandardTariff { unitRate __typename } ... on DayNightTariff { dayRate nightRate __typename } ... on HalfHourlyTariff { unitRates { value validFrom validTo __typename } } } } smartStartDate } gasMeterPoints { mprn id meters { id serialNumber } agreements { id validFrom validTo tariff { displayName fullName unitRate standingCharge } } smartStartDate } } } }'
     }
+    let json = await this.#submitGQL(payload);
+    console.log(json);
+    account.status = json.account.status;
+  }
+
+  #GQLgetLoggedInUser = async function() {
+    this.#mustBeAuthenticated();
     let payload = {
       'operationName': 'getLoggedInUser',
       'variables': {},
-      'query': 'query getLoggedInUser { viewer { accounts { number __typename } preferredName __typename } }'
+      'query': 'query getLoggedInUser { viewer { accounts { number } preferredName } }'
     }
     let json = await this.#submitGQL(payload);
-    // TODO: handle multiple account numbers (right now we only handle the first one)
-    this.#accountNumber = json.viewer.accounts[0].number;
+    for (const account of json.viewer.accounts) {
+      this.#accounts.push( { number: account.number } );
+    }
     this.#preferredName = json.viewer.preferredName;
   }
 
@@ -98,6 +118,22 @@ class OctopusEnergy {
     } else {
       throw `Unable to authenticate ${message}`;
     }
+  }
+  
+  #mustBeAuthenticated = function() {
+    if (!this.isAuthenticated()) {
+      throw 'Authentication required';
+    }
+  }
+
+  #mustBeValidAccount = async function(accountNumber) {
+    let accounts = await this.getAccounts();
+    for (const account of accounts) {
+      if (account.number === accountNumber) {
+        return account;
+      }
+    }
+    throw `Invalid account number ${accountNumber}`;
   }
 
   #submitGQL = async function(payload) {
