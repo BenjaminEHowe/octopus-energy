@@ -1,10 +1,116 @@
 <!doctype html>
-<html>
+<html lang="en" class="h-100">
 <head>
-  <meta charset="utf-8" />
   <title>Octopus Energy API Playground</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+  <style>
+    .container {
+      width: auto;
+      max-width: 960px;
+      padding: 0 15px;
+    }
+
+    .alert {
+      margin: 1rem auto;
+    }
+
+    #login form {
+      width: 50%;
+      float: left;
+      padding: 0.5rem;
+    }
+
+    .footer {
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+  </style>
 </head>
-<body>
-  <h1>Octopus Energy API Playground</h1>
+<body class="d-flex flex-column h-100">
+  <main role="main" class="flex-shrink-0">
+    <div class="container">
+      <h1 class="mt-5">Octopus Energy API Playground</h1>
+      <div id="errors"></div>
+      <div id="login">
+        <p>Please log in, using either an API key or your username and password, to use this tool:</p>
+        <form>
+          <div class="form-group">
+            <label for="apiKey">API key</label>
+            <input type="text" class="form-control" id="apiKey" placeholder="Enter API key">
+          </div>
+          <button type="submit" class="btn btn-primary" id="apiKeyLoginBtn">Submit</button>
+        </form>
+        <form>
+          <div class="form-group">
+            <label for="email">Email address</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter email" autocomplete="section-email email">
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" class="form-control" id="password" placeholder="Password" autocomplete="section-email current-password">
+          </div>
+          <button type="submit" class="btn btn-primary" id="emailPasswordLoginBtn">Submit</button>
+        </form>
+      </div>
+      <p class="lead" id="welcome" style="display:none">Welcome, <span id="welcomePreferredName"></span>!</p>
+    </div>
+  </main>
+  <footer class="footer mt-auto py-3">
+    <div class="container">
+      <span class="text-muted">Copyright &copy; <a href="https://www.beh.uk/" class="text-dark">Benjamin Howe</a> 2020.</span>
+    </div>
+  </footer>
+  <script src="js/octopus.js"></script>
+  <script>
+    let octopus = new OctopusEnergy();
+
+    document.getElementById("apiKeyLoginBtn").addEventListener("click", async (event) => {
+      event.preventDefault();
+      let apiKey = document.getElementById("apiKey").value;
+      try {
+        await octopus.authenticate(apiKey);
+      } catch (error) {
+        displayErrorMessage(error);
+        return;
+      }
+      successfullyAuthenticated();
+    });
+
+    document.getElementById("emailPasswordLoginBtn").addEventListener("click", async (event) => {
+      event.preventDefault();
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      try {
+        await octopus.authenticate(email, password);
+      } catch (error) {
+        displayErrorMessage(error);
+        return;
+      }
+      successfullyAuthenticated();
+    });
+
+    function displayErrorMessage(error) {
+      document.getElementById("errors").innerHTML += `
+        <div class="alert alert-danger" role="alert">
+          Error: ${error}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      `;
+    }
+
+    async function successfullyAuthenticated() {
+      document.getElementById("login").style = "display: none;";
+      let preferredName = await octopus.getPreferredName();
+      document.getElementById("welcomePreferredName").innerText = preferredName;
+      document.getElementById("welcome").style = "display: inherit"
+    }
+  </script>
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 </body>
 </html>
