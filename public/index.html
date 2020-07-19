@@ -1,15 +1,18 @@
 <!doctype html>
 <html lang="en" class="h-100">
 <head>
-  <title>Octopus Energy API Playground</title>
+  <title>Octopus Energy Playground</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
   <style>
     .container {
-      width: auto;
       max-width: 960px;
       padding: 0 15px;
+    }
+
+    .nav-link {
+      padding: 0.5rem 0.75rem!important;
     }
 
     .alert {
@@ -35,9 +38,35 @@
   </style>
 </head>
 <body class="d-flex flex-column h-100">
+  <header>
+    <nav class="navbar navbar-expand-sm navbar-light bg-light">
+      <div class="container">
+        <a class="navbar-brand" href="#">Octopus Energy Playground</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Agile Tariff Explorer</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">About</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" href="#">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
   <main role="main" class="flex-shrink-0">
     <div class="container">
-      <h1 class="mt-5">Octopus Energy API Playground</h1>
+      <h1 class="mt-5">Octopus Energy Playground</h1>
       <div id="errors"></div>
       <div id="login">
         <p>Please log in, using either an API key or your username and password, to use this tool:</p>
