@@ -137,8 +137,22 @@
       let accounts = await octopus.getAccounts();
       for (const account of accounts) {
         document.getElementById('accountInfo').innerHTML += `<div id="acc-${account.number}"></div>`;
+        document.getElementById(`acc-${account.number}`).innerHTML += `<button class="btn btn-primary float-right" id="acc-${account.number}-btn">Show</button>`;
         document.getElementById(`acc-${account.number}`).innerHTML += `<h2>Account ${account.number}</h2>`;
+        document.getElementById(`acc-${account.number}`).innerHTML += `<div id="acc-${account.number}-data"></div>`;
+        document.getElementById(`acc-${account.number}-btn`).addEventListener("click", handleAccountShowHideClick);
       }
+    }
+
+    async function handleAccountShowHideClick(event) {
+      let button = event.target;
+      button.disabled = true;
+      let accountNumber = event.target.id.substr('acc-'.length, event.target.id.length - 'acc--btn'.length);
+      let account = await octopus.getAccount(accountNumber);
+      document.getElementById(`acc-${accountNumber}-data`).innerHTML = account.balance;
+
+      // finally, reset the eventHandler
+      document.getElementById(`acc-${accountNumber}-btn`).addEventListener("click", handleAccountShowHideClick);
     }
   </script>
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>

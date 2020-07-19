@@ -38,7 +38,7 @@ class OctopusEnergy {
 async getAccount(accountNumber) {
   let account = await this.#mustBeValidAccount(accountNumber);
   if (!account.status) {
-    this.#GQLgetAccount(accountNumber);
+    await this.#GQLgetAccount(accountNumber);
   }
   return account;
 }
@@ -94,6 +94,18 @@ async getAccount(accountNumber) {
     let json = await this.#submitGQL(payload);
     console.log(json);
     account.status = json.account.status;
+    let balanceStr = json.account.balance.toString();
+    account.balance = balanceStr.substr(0, balanceStr.length - 2) + '.' + balanceStr.substr(balanceStr.length - 2) + ' GBP';
+    account.properties = [];
+    for (const jsonProperty of json.account.properties) {
+      let property = {};
+      property.id = jsonProperty.id;
+      property.address = jsonProperty.address;
+      property.electricityMeterPoints = jsonProperty.electricityMeterPoints;
+      property.gasMeterPoints = jsonProperty.gasMeterPoints;
+      property.occupancyPeriods = jsonProperty.occupancyPeriods;
+      account.properties.push(property);
+    }
   }
 
   #GQLgetLoggedInUser = async function() {
