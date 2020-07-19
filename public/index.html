@@ -76,6 +76,7 @@
     document.getElementById("apiKeyLoginBtn").addEventListener("click", async (event) => {
       event.preventDefault();
       let apiKey = document.getElementById("apiKey").value;
+      awaitLogin();
       try {
         await octopus.authenticate(apiKey);
       } catch (error) {
@@ -90,6 +91,7 @@
       event.preventDefault();
       let email = document.getElementById("email").value;
       let password = document.getElementById("password").value;
+      awaitLogin();
       try {
         await octopus.authenticate(email, password);
       } catch (error) {
@@ -97,7 +99,6 @@
         return;
       }
       document.getElementById("email").value = '';
-      document.getElementById("password").value = '';
       successfullyAuthenticated();
     });
 
@@ -123,11 +124,16 @@
       document.getElementById("logoutBtn").style = 'display: none;';
     }
 
-    async function successfullyAuthenticated() {
+    function awaitLogin() {
+      document.getElementById("password").value = '';
       document.getElementById("login").style = "display: none;";
       document.getElementById("logoutBtn").style = '';
+      document.getElementById('accountInfo').innerHTML = `<p class="lead">Loading, please wait...</p>`;
+    }
+
+    async function successfullyAuthenticated() {
       let preferredName = await octopus.getPreferredName();
-      document.getElementById('accountInfo').innerHTML += `<p class="lead" id="welcome">Welcome, ${preferredName}!</p>`;
+      document.getElementById('accountInfo').innerHTML = `<p class="lead">Welcome, ${preferredName}!</p>`;
       let accounts = await octopus.getAccounts();
       for (const account of accounts) {
         document.getElementById('accountInfo').innerHTML += `<div id="acc-${account.number}"></div>`;
